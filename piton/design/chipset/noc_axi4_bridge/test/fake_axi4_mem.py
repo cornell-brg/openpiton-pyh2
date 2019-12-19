@@ -18,7 +18,7 @@ class axi4_read_req:
         self.arsize = arsize
         self.arburst = arburst
         self.arlock = arlock
-        self.arachce = arcache
+        self.arcache = arcache
         self.arprot = arprot
         self.arqos = arqos
         self.arregion = arregion
