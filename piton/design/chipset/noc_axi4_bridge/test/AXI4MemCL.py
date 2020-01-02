@@ -11,6 +11,7 @@ Author : Yanghui Ou
 from pymtl3 import *
 from pymtl3.stdlib.fl import MemoryFL
 from pymtl3.stdlib.cl.DelayPipeCL import DelayPipeSendCL, DelayPipeDeqCL
+from pymtl3.stdlib.ifcs import SendIfcRTL, RecvIfcRTL, RecvCL2SendRTL, RecvRTL2SendCL
 
 from .axi_msgs import *
 
@@ -44,12 +45,9 @@ class AXI4MemCL( Component ):
 
     # State variables
 
-    s.ar_msg = None
-    s.dr_msg = None
-
     s.aw_msg   = None
     s.dw_msg   = None
-    s.resp_msg = None
+    s.ar_msg = None
 
     # Update blocks
     # TODO: support streaming
@@ -59,10 +57,10 @@ class AXI4MemCL( Component ):
 
       # Assemble write request
 
-      if pipe_aw.deq.rdy():
+      if s.pipe_aw.deq.rdy():
         s.aw_msg = pipe_aw.deq()
 
-      if pipe_dw.deq.rdu():
+      if s.pipe_dw.deq.rdy():
         s.dw_msg = pipe_dw.deq()
 
       # Write memory if write request if ready
@@ -87,7 +85,7 @@ class AXI4MemCL( Component ):
 
       # Assemble read request
 
-      if pipe_ar.deq.rdy():
+      if s.pipe_ar.deq.rdy():
         s.ar_msg = pipe_ar.deq()
 
       # Read memory if read request is ready
@@ -103,4 +101,61 @@ class AXI4MemCL( Component ):
         s.pipe_dr.enq( resp )
         s.ar_msg = None
 
+  # TODO
+  def line_trace( s ):
+    return ''
+
+#-------------------------------------------------------------------------
+# AXI4MemRTL 
+#-------------------------------------------------------------------------
+# Wrap the CL memory with RTL interface
+
+class AXI4MemRTL( Component ):
+
+  def construct( s, delay_ar=1, delay_dr=1, 
+                 delay_aw=1, delay_dw=1, delay_resp=1 ):
+
+    # Interface
+
+    s.addr_read = RecvIfcRTL( AXI4AddrRead )
+    s.data_read = SendIfcRTL( AXI4DataRead )
+
+    s.addr_write = RecvIfcRTL( AXI4AddrWrite )
+    s.data_write = RecvIfcRTL( AXI4DataWrite )
+    s.write_resp = SendIfcRTL( AXI4WriteResp )
+
+    # Internal memory
+
+    s.mem_cl = AXI4MemCL( delay_ar, delay_dr, delay_aw, delay_dw, delay_resp )
+
+    # Adapters
+
+    s.adapter_ar = RecvRTL2SendCL( AXI4AddrRead )(
+      recv = s.addr_read,
+      send = s.mem_cl.addr_read,
+    )
+
+    s.adapter_dr = RecvCL2SendRTL( AXI4DataRead )(
+      recv = s.mem_cl.data_read,
+      send = s.data_read,
+    )
+
+    s.adapter_aw = RecvRTL2SendCL( AXI4AddrWrite )(
+      recv = s.addr_write,
+      send = s.mem_cl.addr_write,
+    )
+
+    s.adapter_dw = RecvRTL2SendCL( AXI4DataWrite )(
+      recv = s.data_write,
+      send = s.mem_cl.data_write,
+    )
+
+    s.adapter_resp = RecvCL2SendRTL( AXI4WriteResp )(
+      recv = s.mem_cl.write_resp,
+      send = s.write_resp,
+    )
+
+  # TODO
+  def line_trace( s ):
+    return ''
 
