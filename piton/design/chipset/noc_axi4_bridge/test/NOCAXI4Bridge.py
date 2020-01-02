@@ -30,7 +30,7 @@ from .axi_msgs import *
 #-------------------------------------------------------------------------
 # Imported module
 
-class NOCAXI4Bridge( Component ):
+class NOCAXI4Bridge( Placeholder, Component ):
   def construct( s ):
 
     s.uart_boot_en = InPort( Bits1 )
@@ -321,6 +321,9 @@ class AXI4Adapter( Component ):
     s.recv_2_resp.out.msg.bid   //= s.adapter.m_axi_bid
     s.recv_2_resp.out.msg.bresp //= s.adapter.m_axi_bresp
     s.recv_2_resp.out.msg.buser //= s.adapter.m_axi_buser
+
+    s.adapter.uart_boot_en  //= b1(0)
+    s.adapter.phy_init_done //= b1(0)
 
   # Line trace
 
