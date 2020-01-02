@@ -28,6 +28,7 @@ class FakeMemWrapper( Component ):
 
     # Interface 
 
+    # Addr write
     s.m_axi_awid     = InPort( BitsAXI4IDWidth )
     s.m_axi_awaddr   = InPort( BitsAXI4AddrWidth )
     s.m_axi_awlen    = InPort( BitsAXI4LenWidth )
@@ -42,6 +43,7 @@ class FakeMemWrapper( Component ):
     s.m_axi_awvalid  = InPort( Bits1 )
     s.m_axi_awready  = OutPort( Bits1 )
 
+    # Data write
     s.m_axi_wid    = InPort( BitsAXI4IDWidth )
     s.m_axi_wdata  = InPort( BitsAXI4DataWidth )
     s.m_axi_wstrb  = InPort( BitsAXI4StrbWidth )
@@ -50,6 +52,7 @@ class FakeMemWrapper( Component ):
     s.m_axi_wvalid = InPort( Bits1 )
     s.m_axi_wready = OutPort( Bits1 )
 
+    # Addr read
     s.m_axi_arid     = InPort( BitsAXI4IDWidth )
     s.m_axi_araddr   = InPort( BitsAXI4AddrWidth )
     s.m_axi_arlen    = InPort( BitsAXI4LenWidth )
@@ -64,6 +67,7 @@ class FakeMemWrapper( Component ):
     s.m_axi_arvalid  = InPort( Bits1 )
     s.m_axi_arready  = OutPort( Bits1 )
 
+    # Data read
     s.m_axi_rid    = OutPort( BitsAXI4IDWidth )
     s.m_axi_rdata  = OutPort( BitsAXI4DataWidth )
     s.m_axi_rresp  = OutPort( BitsAXI4RespWidth )
