@@ -78,6 +78,7 @@ def mk_piton_rd_req( addr, nbytes, cacheable, tag,
   pkt.flits[0][ CHIPID ] = b14(dst_chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
+  pkt.flits[0][ TAG    ] = b8(tag)
   pkt.flits[0][ PLEN   ] = b8(2) 
   pkt.flits[0][ CHIPID ] = b8(2) 
   pkt.flits[0][ MTYPE  ] = b8(19) if cacheable else b8(14) 
@@ -102,6 +103,7 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
   pkt.flits[0][ CHIPID ] = b14(dst_chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
+  pkt.flits[0][ TAG    ] = b8(tag)
   pkt.flits[0][ PLEN   ] = b8(10) 
   pkt.flits[0][ CHIPID ] = b8(2) 
   pkt.flits[0][ MTYPE  ] = b8( STORE_MEM ) if cacheable else b8( NC_STORE_MEM_ACK ) 
@@ -114,9 +116,9 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
   pkt.flits[2][ YPOS   ] = b8(src_y)
 
   for i in range( 8 ):
-    pkt.flits[i+3] = data[i*64:(i+1):64]
+    pkt.flits[i+3] = data[i*64:(i+1)*64]
 
-  return pkt
+  return list(pkt.flits)
 
 #-------------------------------------------------------------------------
 # mk_piton_rd_resp
@@ -145,6 +147,8 @@ def mk_piton_wr_resp( tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt.flits[0][ MTYPE  ] = b8(STORE_MEM_ACK) if cacheable else b8(NC_STORE_MEM_ACK) 
   pkt.flits[0][ PLEN   ] = b8(0)
   pkt.flits[0][ TAG    ] = b8(tag)
-  pkt.flits[0][ CHIPID ] = b14(dst_chipid)
+  pkt.flits[0][ CHIPID ] = b14(chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
+
+  return list(pkt.flits)

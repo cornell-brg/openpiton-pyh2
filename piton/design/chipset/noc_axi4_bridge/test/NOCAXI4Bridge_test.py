@@ -15,6 +15,7 @@ from .NOCAXI4Bridge import NOCAXI4Bridge, AXI4Adapter
 from .AXI4MemCL import AXI4MemRTL
 from .packet_srcs import PacketSrcCL
 from .packet_sinks import PacketSinkCL
+from .piton_packet import mk_piton_wr_req, mk_piton_wr_resp
 
 #-------------------------------------------------------------------------
 # TestHarness
@@ -41,6 +42,22 @@ class TestHarness( Component ):
 
   def line_trace( s ):
     return s.dut.line_trace()
+
+#-------------------------------------------------------------------------
+# run_sim
+#-------------------------------------------------------------------------
+
+def run_sim( th, max_cycles=100 ):
+  ncycles = 0
+  print("")
+  print("{:3}:{}".format( ncycles, th.line_trace() ))
+  while not th.done() and ncycles < max_cycles:
+    th.tick()
+    ncycles += 1
+    print("{:3}:{}".format( ncycles, th.line_trace() ))
+
+  # Check timeout
+  assert ncycles < max_cycles
 
 #-------------------------------------------------------------------------
 # Sanity check
@@ -78,3 +95,18 @@ def test_import_th():
   m.tick()
   print()
   print( 'Imported!' )
+
+#-------------------------------------------------------------------------
+# directed test
+#-------------------------------------------------------------------------
+
+def test_simple_wr():
+  req  = [ mk_piton_wr_req( 0x1000, 64, True, 1, Bits512(0xdeadbeef) )  ]
+  resp = [ mk_piton_wr_resp( 1, True ) ]
+  th = TestHarness( req, resp )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th )
