@@ -47,6 +47,9 @@ class AXI4DataRead:
   rlast : Bits1
   ruser : Bits11
 
+  def __str__( self ):
+    return f'{self.rdata[480:512]}...{self.rdata[0:32]}'
+
 @bitstruct
 class AXI4AddrWrite:
   awid     : Bits6
@@ -68,6 +71,9 @@ class AXI4DataWrite:
   wstrb    : Bits64
   wlast    : Bits1
   wuser    : Bits11
+
+  def __str__( self ):
+    return f'{self.wdata[480:512]}...{self.wdata[0:32]}'
 
 @bitstruct
 class AXI4WriteResp:

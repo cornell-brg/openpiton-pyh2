@@ -130,12 +130,14 @@ def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt.flits[0][ MTYPE ]  = b8(LOAD_MEM_ACK) if cacheable else b8(NC_LOAD_MEM_ACK)
   pkt.flits[0][ PLEN  ]  = b8(8)
   pkt.flits[0][ TAG   ]  = b8(tag)
-  pkt.flits[0][ CHIPID ] = b14(dst_chipid)
+  pkt.flits[0][ CHIPID ] = b14(chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
 
   for i in range( 8 ):
-    pkt.flits[i+1] = data[i*64:(i+1):64]
+    pkt.flits[i+1] = data[i*64:(i+1)*64]
+
+  print( 'here', pkt.flits[1] )
 
   return list(pkt.flits)
 

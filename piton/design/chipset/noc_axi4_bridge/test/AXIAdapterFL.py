@@ -28,15 +28,16 @@ class AXIAdapterFL( Component ):
       tag    = pkt[0][ TAG   ]
       addr   = pkt[1][ ADDR   ]
       nbytes = size_map[ pkt[1][ NBYTES ] ]
-      chipid = pkt[2][ CHIPD ]
-      xpos   = pkt[2][ XPOS  ]
-      ypos   = pkt[2][ YPOS  ]
+      chipid = pkt[2][ CHIPID ]
+      xpos   = pkt[2][ XPOS   ]
+      ypos   = pkt[2][ YPOS   ]
 
       # TODO:
       # - support variable length
       # - 64B aligned
       aligned_addr = addr
       data = s.mem.read( aligned_addr, 64 )
+      print( 'rd:', aligned_addr, data )
 
       return mk_piton_rd_resp( data, tag, True, chipid, xpos, ypos )
 
@@ -46,9 +47,9 @@ class AXIAdapterFL( Component ):
       tag    = pkt[0][ TAG   ]
       addr   = pkt[1][ ADDR   ]
       nbytes = size_map[ pkt[1][ NBYTES ] ]
-      chipid = pkt[2][ CHIPD ]
-      xpos   = pkt[2][ XPOS  ]
-      ypos   = pkt[2][ YPOS  ]
+      chipid = pkt[2][ CHIPID ]
+      xpos   = pkt[2][ XPOS   ]
+      ypos   = pkt[2][ YPOS   ]
 
       # TODO:
       # - support variable length
@@ -71,22 +72,23 @@ class AXIAdapterFL( Component ):
       aligned_addr = addr
       data = s.mem.read( aligned_addr, 64 )
       for i in range( 8 ):
-        data[i*64:(i+1)*64] = b64( pkt[i] )
+        data[i*64:(i+1)*64] = b64( pkt[i+3] )
 
       s.mem.write( aligned_addr, 64, data )
       print( tag, chipid, xpos, ypos )
+      print( 'wr', aligned_addr, data )
       return mk_piton_wr_resp( tag, True, chipid, xpos, ypos )
 
 
     # Non-cacheable store
 
     elif pkt[0][ MTYPE ] == NC_STORE_REQ:
-      tag    = pkt[0][ TAG   ]
+      tag    = pkt[0][ TAG    ]
       addr   = pkt[1][ ADDR   ]
       nbytes = size_map[ pkt[1][ NBYTES ] ]
-      chipid = pkt[2][ CHIPD ]
-      xpos   = pkt[2][ XPOS  ]
-      ypos   = pkt[2][ YPOS  ]
+      chipid = pkt[2][ CHIPID ]
+      xpos   = pkt[2][ XPOS   ]
+      ypos   = pkt[2][ YPOS   ]
 
       aligned_addr = addr
       data = s.mem.read( aligned_addr, 64 )

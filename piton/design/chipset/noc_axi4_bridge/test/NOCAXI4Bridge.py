@@ -334,4 +334,4 @@ class AXI4Adapter( Component ):
   # Line trace
 
   def line_trace( s ):
-    return f'{s.noc_recv}|{s.noc_send}(){s.addr_read}II{s.addr_write}|{s.write_resp}'
+    return f'{s.noc_recv}|{s.noc_send}(){s.addr_read}|{s.data_read}II{s.addr_write}|{s.data_write}|{s.write_resp}'
