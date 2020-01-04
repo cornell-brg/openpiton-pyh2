@@ -198,6 +198,7 @@ def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   src_y = 1
   payload = draw( st.lists( pst.bits(64), min_size=8, max_size=8 ) )
   wr_data = reduce( lambda a, b: concat( b, a ), payload)
+  # wr_data = draw( pst.bits(512) )
   nbytes  = draw( st.sampled_from( [ 64, 32, 16 ] ) )
   return mk_piton_wr_req( addr, nbytes, False, 0, wr_data, src_x=src_x, src_y=src_y )
 
