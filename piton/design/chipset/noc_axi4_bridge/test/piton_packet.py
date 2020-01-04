@@ -7,6 +7,11 @@ Util stuff for piton packet.
 Author : Yanghui Ou
   Date : Dec 17, 2019
 '''
+import hypothesis
+from hypothesis import strategies as st
+from functools import reduce
+
+from pymtl3.datatypes import strategies as pst
 from pymtl3 import *
 
 #-------------------------------------------------------------------------
@@ -156,3 +161,34 @@ def mk_piton_wr_resp( tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt.flits[0][ YPOS   ] = b8(dst_y)
 
   return list(pkt.flits)
+
+#-------------------------------------------------------------------------
+# piton_rd_reqs
+#-------------------------------------------------------------------------
+# TODO: for now only do 64 byte write
+
+@st.composite
+def piton_rd_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
+  idx   = draw( st.integers( 0, num_addr) )
+  addr  = base_addr + idx * 0x40
+  src_x = draw( st.integers( 0, max_x ) )
+  src_y = draw( st.integers( 0, max_y ) )
+  return mk_piton_rd_resp( addr, 64, True, 0, src_x=src_x, src_y=src_y )
+
+@st.composite
+def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
+  idx     = draw( st.integers( 0, num_addr) )
+  addr    = base_addr + idx * 0x40
+  src_x   = draw( st.integers( 0, max_x ) )
+  src_y   = draw( st.integers( 0, max_y ) )
+  payload = draw( st.lists( pst.bits(64), min_size=8, max_size=8 ) )
+  wr_data = reduce( lambda a, b: concat( b, a ) payload)
+  return mk_piton_wr_req( addr, 64, True, 0, data, src_x=src_x, src_y=src_y )
+
+@st.composite
+def piton_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
+  req_type = draw( st.sampled_from( [ 'rd', 'wr' ] ) )
+  if req_type == 'rd':
+    return draw( piton_rd_reqs( num_addr, base_addr, max_x, max_y ) )
+  else:
+    return draw( piton_wr_reqs( num_addr, base_addr, max_x, max_y ) )

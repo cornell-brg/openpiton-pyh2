@@ -36,6 +36,7 @@ class AXIAdapterFL( Component ):
       # - support variable length
       # - 64B aligned
       aligned_addr = addr
+      assert addr % 64 == 0
       data = s.mem.read( aligned_addr, 64 )
       print( 'rd:', aligned_addr, data )
 
@@ -55,6 +56,7 @@ class AXIAdapterFL( Component ):
       # - support variable length
       # - 64B aligned
       aligned_addr = addr
+      assert addr % 64 == 0
       data = s.mem.read( aligned_addr, 64 )
 
       return mk_piton_rd_resp( data, tag, False, chipid, xpos, ypos )
@@ -70,6 +72,7 @@ class AXIAdapterFL( Component ):
       ypos   = pkt[2][ YPOS   ]
 
       aligned_addr = addr
+      assert addr % 64 == 0
       data = s.mem.read( aligned_addr, 64 )
       for i in range( 8 ):
         data[i*64:(i+1)*64] = b64( pkt[i+3] )
@@ -91,6 +94,7 @@ class AXIAdapterFL( Component ):
       ypos   = pkt[2][ YPOS   ]
 
       aligned_addr = addr
+      assert addr % 64 == 0
       data = s.mem.read( aligned_addr, 64 )
       for i in range( 8 ):
         data[i*64:(i+1)*64] = b64( pkt[i] )
