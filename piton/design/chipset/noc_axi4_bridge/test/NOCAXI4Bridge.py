@@ -33,8 +33,9 @@ from .axi_msgs import *
 class NOCAXI4Bridge( Placeholder, Component ):
   def construct( s ):
 
-    s.uart_boot_en = InPort( Bits1 )
+    s.uart_boot_en  = InPort( Bits1 )
     s.phy_init_done = InPort( Bits1 )
+    s.rst_n         = InPort( Bits1 )
 
     s.src_bridge_vr_noc2_val = InPort( Bits1 )
     s.src_bridge_vr_noc2_dat = InPort( BitsNOCDataWidth )
@@ -92,7 +93,7 @@ class NOCAXI4Bridge( Placeholder, Component ):
     s.m_axi_buser = InPort( BitsAXI4UserWidth )
     s.m_axi_bvalid = InPort( Bits1 )
     s.m_axi_bready = OutPort( Bits1 )
- 
+
     s.config_sverilog_import = ImportConfigs(
       # Name of the top Verilog module
       top_module = 'noc_axi4_bridge', # File containing the top module
@@ -115,7 +116,8 @@ class NOCAXI4Bridge( Placeholder, Component ):
       # Map python names to Verilog names
       port_map = {
         "clk" : "clk",
-        "reset" : "rst_n",
+        "rst_n" : "rst_n",
+        "reset" : "reset",
         "uart_boot_en" : "uart_boot_en",
         "phy_init_done" : "phy_init_done" ,
         "src_bridge_vr_noc2_val" : "src_bridge_vr_noc2_val",
@@ -186,7 +188,7 @@ class ValRdy2Send( Component ):
   def construct( s, MsgType ):
 
     s.in_ = InValRdyIfc( MsgType )
-    s.out = SendIfcRTL( MsgType ) 
+    s.out = SendIfcRTL( MsgType )
 
     @s.update
     def comb_logic0():
@@ -195,11 +197,11 @@ class ValRdy2Send( Component ):
     @s.update
     def comb_logic1():
       s.out.en  = s.out.rdy & s.in_.val
-    
+
     @s.update
-    def comb_logic2(): 
+    def comb_logic2():
       s.out.msg = s.in_.msg
-  
+
   def line_trace( s ):
     return "{} | {}".format( s.in_, s.out )
 
@@ -212,20 +214,20 @@ class Recv2ValRdy( Component ):
   def construct( s, MsgType ):
 
     s.in_ = RecvIfcRTL( MsgType )
-    s.out = OutValRdyIfc( MsgType ) 
+    s.out = OutValRdyIfc( MsgType )
 
     @s.update
     def comb_logic0():
       s.in_.rdy = s.out.rdy
-    
+
     @s.update
     def comb_logic1():
       s.out.val = s.in_.en
-    
+
     @s.update
-    def comb_logic2(): 
+    def comb_logic2():
       s.out.msg = s.in_.msg
-  
+
   def line_trace( s ):
     return "{} | {}".format( s.in_, s.out )
 
@@ -266,7 +268,7 @@ class AXI4Adapter( Component ):
     s.noc_vr_2_send.in_.val //= s.adapter.bridge_dst_vr_noc3_val
     s.noc_vr_2_send.in_.rdy //= s.adapter.bridge_dst_vr_noc3_rdy
     s.noc_vr_2_send.in_.msg //= s.adapter.bridge_dst_vr_noc3_dat
-    
+
     s.ar_2_send = ValRdy2Send( AXI4AddrRead )( out = s.addr_read )
     s.ar_2_send.in_.val          //= s.adapter.m_axi_arvalid
     s.ar_2_send.in_.rdy          //= s.adapter.m_axi_arready
@@ -323,9 +325,13 @@ class AXI4Adapter( Component ):
     s.recv_2_resp.out.msg.buser //= s.adapter.m_axi_buser
 
     s.adapter.uart_boot_en  //= b1(0)
-    s.adapter.phy_init_done //= b1(0)
+    s.adapter.phy_init_done //= b1(1)
+
+    @s.update
+    def invert_reset():
+      s.adapter.rst_n = ~s.reset
 
   # Line trace
 
   def line_trace( s ):
-    return f'{s.noc_recv}(){s.noc_send}'
+    return f'{s.noc_recv}|{s.noc_send}(){s.addr_read}II{s.addr_write}|{s.write_resp}'

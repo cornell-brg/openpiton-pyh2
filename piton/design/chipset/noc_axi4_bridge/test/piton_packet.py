@@ -48,14 +48,14 @@ NC_STORE_REQ     = b8(15)
 NC_STORE_MEM_ACK = b8(27)
 
 size_map = {
-  b3( 0b000 ) : 0, 
-  b3( 0b001 ) : 1, 
-  b3( 0b010 ) : 2, 
-  b3( 0b011 ) : 4, 
-  b3( 0b100 ) : 8, 
-  b3( 0b101 ) : 16, 
-  b3( 0b110 ) : 32, 
-  b3( 0b111 ) : 64, 
+  b3( 0b000 ) : 0,
+  b3( 0b001 ) : 1,
+  b3( 0b010 ) : 2,
+  b3( 0b011 ) : 4,
+  b3( 0b100 ) : 8,
+  b3( 0b101 ) : 16,
+  b3( 0b110 ) : 32,
+  b3( 0b111 ) : 64,
 }
 
 #-------------------------------------------------------------------------
@@ -71,17 +71,17 @@ class PitonPacket:
 # mk_piton_rd_req
 #-------------------------------------------------------------------------
 
-def mk_piton_rd_req( addr, nbytes, cacheable, tag, 
-                     dst_chipid=0, dst_x=0, dst_y=0, 
-                     src_chipid=0, src_x=0, src_y=0 ):  
+def mk_piton_rd_req( addr, nbytes, cacheable, tag,
+                     dst_chipid=0, dst_x=0, dst_y=0,
+                     src_chipid=0, src_x=0, src_y=0 ):
   pkt = PitonPacket( nflits = 3 )
   pkt.flits[0][ CHIPID ] = b14(dst_chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
   pkt.flits[0][ TAG    ] = b8(tag)
-  pkt.flits[0][ PLEN   ] = b8(2) 
-  pkt.flits[0][ CHIPID ] = b8(2) 
-  pkt.flits[0][ MTYPE  ] = b8(19) if cacheable else b8(14) 
+  pkt.flits[0][ PLEN   ] = b8(2)
+  pkt.flits[0][ CHIPID ] = b8(2)
+  pkt.flits[0][ MTYPE  ] = b8(19) if cacheable else b8(14)
 
   pkt.flits[1][ ADDR   ] = b48(addr)
   pkt.flits[1][ NBYTES ] = b3(nbytes)
@@ -96,17 +96,17 @@ def mk_piton_rd_req( addr, nbytes, cacheable, tag,
 # mk_piton_wr_req
 #-------------------------------------------------------------------------
 
-def mk_piton_wr_req( addr, nbytes, cacheable, tag, data, 
-                     dst_chipid=0, dst_x=0, dst_y=0, 
-                     src_chipid=0, src_x=0, src_y=0 ):  
+def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
+                     dst_chipid=0, dst_x=0, dst_y=0,
+                     src_chipid=0, src_x=0, src_y=0 ):
   pkt = PitonPacket( nflits = 11 )
   pkt.flits[0][ CHIPID ] = b14(dst_chipid)
   pkt.flits[0][ XPOS   ] = b8(dst_x)
   pkt.flits[0][ YPOS   ] = b8(dst_y)
   pkt.flits[0][ TAG    ] = b8(tag)
-  pkt.flits[0][ PLEN   ] = b8(10) 
-  pkt.flits[0][ CHIPID ] = b8(2) 
-  pkt.flits[0][ MTYPE  ] = b8( STORE_MEM ) if cacheable else b8( NC_STORE_MEM_ACK ) 
+  pkt.flits[0][ PLEN   ] = b8(10)
+  pkt.flits[0][ CHIPID ] = b8(2)
+  pkt.flits[0][ MTYPE  ] = b8( STORE_MEM ) if cacheable else b8( NC_STORE_MEM_ACK )
 
   pkt.flits[1][ ADDR   ] = b48(addr)
   pkt.flits[1][ NBYTES ] = b3(nbytes)
@@ -127,7 +127,7 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
 def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt = PitonPacket( nflits=9 )
 
-  pkt.flits[0][ MTYPE ] = b8(LOAD_MEM_ACK) if cacheable else b8(NC_LOAD_MEM_ACK) 
+  pkt.flits[0][ MTYPE ] = b8(LOAD_MEM_ACK) if cacheable else b8(NC_LOAD_MEM_ACK)
   pkt.flits[0][ PLEN  ] = b8(8)
   pkt.flits[0][ TAG   ] = b8(tag)
   pkt.flits[0][ CHIPID ] = b14(dst_chipid)
@@ -142,9 +142,9 @@ def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
 #-------------------------------------------------------------------------
 
 def mk_piton_wr_resp( tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
-  pkt = PitonPacket( nflits=9 )
+  pkt = PitonPacket( nflits=1 )
 
-  pkt.flits[0][ MTYPE  ] = b8(STORE_MEM_ACK) if cacheable else b8(NC_STORE_MEM_ACK) 
+  pkt.flits[0][ MTYPE  ] = b8(STORE_MEM_ACK) if cacheable else b8(NC_STORE_MEM_ACK)
   pkt.flits[0][ PLEN   ] = b8(0)
   pkt.flits[0][ TAG    ] = b8(tag)
   pkt.flits[0][ CHIPID ] = b14(chipid)

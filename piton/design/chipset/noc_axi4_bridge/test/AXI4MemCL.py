@@ -17,7 +17,7 @@ from .axi_msgs import *
 
 class AXI4MemCL( Component ):
 
-  def construct( s, delay_ar=1, delay_dr=1, 
+  def construct( s, delay_ar=1, delay_dr=1,
                  delay_aw=1, delay_dw=1, delay_resp=1 ):
 
     # Interface
@@ -58,10 +58,10 @@ class AXI4MemCL( Component ):
       # Assemble write request
 
       if s.pipe_aw.deq.rdy():
-        s.aw_msg = pipe_aw.deq()
+        s.aw_msg = s.pipe_aw.deq()
 
       if s.pipe_dw.deq.rdy():
-        s.dw_msg = pipe_dw.deq()
+        s.dw_msg = s.pipe_dw.deq()
 
       # Write memory if write request if ready
 
@@ -86,7 +86,7 @@ class AXI4MemCL( Component ):
       # Assemble read request
 
       if s.pipe_ar.deq.rdy():
-        s.ar_msg = pipe_ar.deq()
+        s.ar_msg = s.pipe_ar.deq()
 
       # Read memory if read request is ready
 
@@ -106,13 +106,13 @@ class AXI4MemCL( Component ):
     return ''
 
 #-------------------------------------------------------------------------
-# AXI4MemRTL 
+# AXI4MemRTL
 #-------------------------------------------------------------------------
 # Wrap the CL memory with RTL interface
 
 class AXI4MemRTL( Component ):
 
-  def construct( s, delay_ar=1, delay_dr=1, 
+  def construct( s, delay_ar=1, delay_dr=1,
                  delay_aw=1, delay_dw=1, delay_resp=1 ):
 
     # Interface

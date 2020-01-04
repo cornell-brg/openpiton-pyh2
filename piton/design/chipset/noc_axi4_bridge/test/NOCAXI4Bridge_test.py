@@ -40,6 +40,9 @@ class TestHarness( Component ):
     s.dut.data_write //= s.mem.data_write
     s.dut.write_resp //= s.mem.write_resp
 
+  def done( s ):
+    return s.src.done() and s.sink.done()
+
   def line_trace( s ):
     return s.dut.line_trace()
 
