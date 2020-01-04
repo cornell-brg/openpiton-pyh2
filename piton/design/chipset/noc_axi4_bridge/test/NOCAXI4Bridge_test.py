@@ -8,6 +8,8 @@ Author : Yanghui Ou
   Date : Jan 1, 2020
 '''
 
+import hypothesis
+from hypothesis import strategies as st
 from pymtl3 import *
 from pymtl3.passes.backends.sverilog import ImportPass
 
@@ -16,8 +18,13 @@ from .AXIAdapterFL import AXIAdapterFL
 from .AXI4MemCL import AXI4MemRTL
 from .packet_srcs import PacketSrcCL
 from .packet_sinks import PacketSinkCL
-from .piton_packet import mk_piton_wr_req, mk_piton_wr_resp, mk_piton_rd_req, mk_piton_rd_resp
-
+from .piton_packet import (
+  mk_piton_wr_req,
+  mk_piton_wr_resp,
+  mk_piton_rd_req,
+  mk_piton_rd_resp,
+  piton_reqs,
+)
 #-------------------------------------------------------------------------
 # TestHarness
 #-------------------------------------------------------------------------
@@ -124,3 +131,27 @@ def test_simple_wr():
   th.apply( SimulationPass() )
   th.sim_reset()
   run_sim( th )
+
+#-------------------------------------------------------------------------
+# pyh2 test
+#-------------------------------------------------------------------------
+@hypothesis.settings(
+  deadline     = None,
+  max_examples = 50,
+)
+@hypothesis.given(
+  reqs = st.lists( piton_reqs(), min_size=1, max_size=20 )
+)
+def test_hypothesis( reqs ):
+  ref  = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  resps = [ ref.request( r ) for r in reqs ]
+  th = TestHarness( reqs, resps )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th, max_cycles = 500 )

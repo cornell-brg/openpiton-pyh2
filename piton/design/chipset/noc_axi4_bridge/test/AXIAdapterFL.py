@@ -78,8 +78,8 @@ class AXIAdapterFL( Component ):
         data[i*64:(i+1)*64] = b64( pkt[i+3] )
 
       s.mem.write( aligned_addr, 64, data )
-      print( tag, chipid, xpos, ypos )
-      print( 'wr', aligned_addr, data )
+      # print( tag, chipid, xpos, ypos )
+      # print( 'wr', aligned_addr, data )
       return mk_piton_wr_resp( tag, True, chipid, xpos, ypos )
 
 

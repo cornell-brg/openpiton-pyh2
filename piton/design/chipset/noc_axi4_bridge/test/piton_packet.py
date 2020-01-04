@@ -173,7 +173,7 @@ def piton_rd_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   addr  = base_addr + idx * 0x40
   src_x = draw( st.integers( 0, max_x ) )
   src_y = draw( st.integers( 0, max_y ) )
-  return mk_piton_rd_resp( addr, 64, True, 0, src_x=src_x, src_y=src_y )
+  return mk_piton_rd_req( addr, 64, True, 0, src_x=src_x, src_y=src_y )
 
 @st.composite
 def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
@@ -182,8 +182,8 @@ def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   src_x   = draw( st.integers( 0, max_x ) )
   src_y   = draw( st.integers( 0, max_y ) )
   payload = draw( st.lists( pst.bits(64), min_size=8, max_size=8 ) )
-  wr_data = reduce( lambda a, b: concat( b, a ) payload)
-  return mk_piton_wr_req( addr, 64, True, 0, data, src_x=src_x, src_y=src_y )
+  wr_data = reduce( lambda a, b: concat( b, a ), payload)
+  return mk_piton_wr_req( addr, 64, True, 0, wr_data, src_x=src_x, src_y=src_y )
 
 @st.composite
 def piton_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
