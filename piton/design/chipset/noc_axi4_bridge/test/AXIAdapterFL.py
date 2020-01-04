@@ -37,7 +37,6 @@ class AXIAdapterFL( Component ):
       # - 64B aligned
       assert addr % 64 == 0
       data = s.mem.read( addr, 64 )
-      print( 'rd:', aligned_addr, data )
 
       return mk_piton_rd_resp( data, tag, True, chipid, xpos, ypos )
 
@@ -78,7 +77,6 @@ class AXIAdapterFL( Component ):
       # print( tag, chipid, xpos, ypos )
       # print( 'wr', addr, data )
       return mk_piton_wr_resp( tag, True, chipid, xpos, ypos )
-
 
     # Non-cacheable store - variable length write
 

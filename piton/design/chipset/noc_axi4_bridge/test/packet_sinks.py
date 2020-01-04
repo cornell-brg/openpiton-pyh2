@@ -107,7 +107,8 @@ class PacketSinkCL( Component ):
             f'Test sink {s} received WRONG message!\n'
             f'Expected : { s.pkts[ s.idx ] }\n'
             f'Received : { s.buf_pkt }\n'
-            f'Phit {i} does not match'
+            f'Phit {i} does not match\n'
+            f'MTYPE: {s.buf_pkt[0][14:22].uint()}'
           )
           return
 

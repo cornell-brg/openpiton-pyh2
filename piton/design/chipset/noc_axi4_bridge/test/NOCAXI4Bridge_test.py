@@ -18,13 +18,8 @@ from .AXIAdapterFL import AXIAdapterFL
 from .AXI4MemCL import AXI4MemRTL
 from .packet_srcs import PacketSrcCL
 from .packet_sinks import PacketSinkCL
-from .piton_packet import (
-  mk_piton_wr_req,
-  mk_piton_wr_resp,
-  mk_piton_rd_req,
-  mk_piton_rd_resp,
-  piton_reqs,
-)
+from .piton_packet import *
+
 #-------------------------------------------------------------------------
 # TestHarness
 #-------------------------------------------------------------------------
@@ -36,7 +31,7 @@ class TestHarness( Component ):
     s.src  = PacketSrcCL ( Bits64, src_pkts  )
     s.sink = PacketSinkCL( Bits64, sink_pkts )
     s.dut  = AXI4Adapter()
-    s.mem  = AXI4MemRTL()
+    s.mem  = AXI4MemRTL( delay_ar=1, delay_dr=4, delay_aw=1, delay_dw=1, delay_resp=1 )
 
     s.src.send  //= s.dut.noc_recv
     s.sink.recv //= s.dut.noc_send
@@ -132,17 +127,53 @@ def test_simple_wr_rd():
   th.sim_reset()
   run_sim( th )
 
+def test_wr_rd_hi():
+
+  ref  = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  req  = [
+    mk_piton_wr_req( 0x1000, 64, False, 1, Bits512(1 << 64*1), dst_x=1, dst_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 1 ),
+  ]
+  # resp = [ mk_piton_wr_resp( 1, True ) ]
+  resp = [ ref.request( r ) for r in req ]
+
+  th = TestHarness( req, resp )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th )
+
+#-------------------------------------------------------------------------
+# has_wr_req
+#-------------------------------------------------------------------------
+# Helper function that checks if there is at least one wr request in the
+# list
+
+def has_wr_req( reqs ):
+  for r in reqs:
+    if r[0][ MTYPE ] == STORE_MEM or r[0][ MTYPE ] == NC_STORE_REQ:
+      return True
+  return False
+
+
 #-------------------------------------------------------------------------
 # pyh2 test
 #-------------------------------------------------------------------------
+
 @hypothesis.settings(
   deadline     = None,
-  max_examples = 50,
+  max_examples = 20,
 )
 @hypothesis.given(
   reqs = st.lists( piton_reqs(), min_size=1, max_size=20 )
 )
 def test_hypothesis( reqs ):
+  hypothesis.assume( has_wr_req( reqs ) )
   ref  = AXIAdapterFL()
   ref.elaborate()
   ref.apply( SimulationPass() )

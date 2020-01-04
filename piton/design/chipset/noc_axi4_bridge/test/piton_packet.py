@@ -143,7 +143,7 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
 def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt = PitonPacket( nflits=9 )
 
-  pkt.flits[0][ MTYPE ]  = b8(LOAD_MEM_ACK) if cacheable else b8( NC_LOAD_MEM_ACK )
+  pkt.flits[0][ MTYPE ]  = b8(LOAD_MEM_ACK) if cacheable else b8(NC_LOAD_MEM_ACK)
   pkt.flits[0][ PLEN  ]  = b8(8)
   pkt.flits[0][ TAG   ]  = b8(tag)
   pkt.flits[0][ CHIPID ] = b14(chipid)
@@ -153,7 +153,7 @@ def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   for i in range( 8 ):
     pkt.flits[i+1] = data[i*64:(i+1)*64]
 
-  print( 'here', pkt.flits[1] )
+  # print( 'here', pkt.flits[1] )
 
   return list(pkt.flits)
 
