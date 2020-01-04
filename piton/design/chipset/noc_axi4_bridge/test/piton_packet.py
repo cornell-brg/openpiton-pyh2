@@ -182,19 +182,23 @@ def mk_piton_wr_resp( tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
 def piton_rd_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   idx   = draw( st.integers( 0, num_addr) )
   addr  = base_addr + idx * 0x40
-  src_x = draw( st.integers( 0, max_x ) )
-  src_y = draw( st.integers( 0, max_y ) )
+  # src_x = draw( st.integers( 0, max_x ) )
+  # src_y = draw( st.integers( 0, max_y ) )
+  src_x = 1
+  src_y = 1
   return mk_piton_rd_req( addr, 64, False, 0, src_x=src_x, src_y=src_y )
 
 @st.composite
 def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   idx     = draw( st.integers( 0, num_addr) )
   addr    = base_addr + idx * 0x40
-  src_x   = draw( st.integers( 0, max_x ) )
-  src_y   = draw( st.integers( 0, max_y ) )
+  # src_x   = draw( st.integers( 0, max_x ) )
+  # src_y   = draw( st.integers( 0, max_y ) )
+  src_x = 1
+  src_y = 1
   payload = draw( st.lists( pst.bits(64), min_size=8, max_size=8 ) )
   wr_data = reduce( lambda a, b: concat( b, a ), payload)
-  nbytes  = draw( st.sampled_from( [ 64, 1, 2, 4, 8, 16, 32 ] ) )
+  nbytes  = draw( st.sampled_from( [ 64, 32, 16 ] ) )
   return mk_piton_wr_req( addr, nbytes, False, 0, wr_data, src_x=src_x, src_y=src_y )
 
 @st.composite

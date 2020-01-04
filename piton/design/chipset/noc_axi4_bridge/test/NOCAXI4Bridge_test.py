@@ -31,7 +31,7 @@ class TestHarness( Component ):
     s.src  = PacketSrcCL ( Bits64, src_pkts  )
     s.sink = PacketSinkCL( Bits64, sink_pkts )
     s.dut  = AXI4Adapter()
-    s.mem  = AXI4MemRTL( delay_ar=1, delay_dr=4, delay_aw=1, delay_dw=1, delay_resp=1 )
+    s.mem  = AXI4MemRTL( delay_ar=2, delay_dr=4, delay_aw=2, delay_dw=2, delay_resp=1 )
 
     s.src.send  //= s.dut.noc_recv
     s.sink.recv //= s.dut.noc_send
@@ -154,10 +154,17 @@ def test_wr_rd_hi():
 # Helper function that checks if there is at least one wr request in the
 # list
 
+def is_wr_req( req ):
+  return req[0][ MTYPE ] == STORE_MEM or req[0][ MTYPE ] == NC_STORE_REQ
+
 def has_wr_req( reqs ):
+  if not is_wr_req( reqs[0] ):
+    return False
+
   for r in reqs:
-    if r[0][ MTYPE ] == STORE_MEM or r[0][ MTYPE ] == NC_STORE_REQ:
+    if is_wr_req(r):
       return True
+
   return False
 
 
@@ -170,7 +177,7 @@ def has_wr_req( reqs ):
   max_examples = 20,
 )
 @hypothesis.given(
-  reqs = st.lists( piton_reqs(), min_size=1, max_size=20 )
+  reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
 )
 def test_hypothesis( reqs ):
   hypothesis.assume( has_wr_req( reqs ) )
