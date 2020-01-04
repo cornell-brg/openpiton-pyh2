@@ -110,7 +110,7 @@ def test_simple_wr():
   ref.elaborate()
   ref.apply( SimulationPass() )
 
-  req  = [ mk_piton_wr_req( 0x1000, 64, True, 1, Bits512(0xdeadbeef) ) ]
+  req  = [ mk_piton_wr_req( 0x1000, 64, True, 1, Bits512(0xdeadbeef), dst_x=1, dst_y=1 ) ]
   # resp = [ mk_piton_wr_resp( 1, True ) ]
   resp = [ ref.request( r ) for r in req ]
 
