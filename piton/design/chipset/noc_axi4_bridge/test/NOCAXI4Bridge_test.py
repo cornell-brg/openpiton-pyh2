@@ -12,6 +12,7 @@ from pymtl3 import *
 from pymtl3.passes.backends.sverilog import ImportPass
 
 from .NOCAXI4Bridge import NOCAXI4Bridge, AXI4Adapter
+from .AXIAdapterFL import AXIAdapterFL
 from .AXI4MemCL import AXI4MemRTL
 from .packet_srcs import PacketSrcCL
 from .packet_sinks import PacketSinkCL
@@ -104,8 +105,15 @@ def test_import_th():
 #-------------------------------------------------------------------------
 
 def test_simple_wr():
-  req  = [ mk_piton_wr_req( 0x1000, 64, True, 1, Bits512(0xdeadbeef) )  ]
-  resp = [ mk_piton_wr_resp( 1, True ) ]
+
+  ref  = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  req  = [ mk_piton_wr_req( 0x1000, 64, True, 1, Bits512(0xdeadbeef) ) ]
+  # resp = [ mk_piton_wr_resp( 1, True ) ]
+  resp = [ ref.request( r ) for r in req ]
+
   th = TestHarness( req, resp )
   th.elaborate()
   th = ImportPass()( th )
