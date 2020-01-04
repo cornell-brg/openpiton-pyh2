@@ -23,6 +23,8 @@ class PacketSinkCL( Component ):
 
   def construct( s, PhitType, pkts, cmp_fn=lambda a, b : a == b ):
 
+    print( pkts )
+
     s.recv.Type = PhitType
 
     s.idx          = 0
@@ -34,7 +36,7 @@ class PacketSinkCL( Component ):
     s.done_flag      = False
 
     s.state   = STATE_HEADER
-    s.cur_pkt = None
+    s.cur_pkt = []
 
     s.buf_pkt = []
     s.buf_idx = 0

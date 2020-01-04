@@ -63,6 +63,17 @@ size_map = {
   b3( 0b111 ) : 64,
 }
 
+wen_map = {
+  0  : b3( 0b000 ),
+  1  : b3( 0b001 ),
+  2  : b3( 0b010 ),
+  4  : b3( 0b011 ),
+  8  : b3( 0b100 ),
+  16 : b3( 0b101 ),
+  32 : b3( 0b110 ),
+  64 : b3( 0b111 ),
+}
+
 #-------------------------------------------------------------------------
 # pitonpacket
 #-------------------------------------------------------------------------
@@ -89,7 +100,7 @@ def mk_piton_rd_req( addr, nbytes, cacheable, tag,
   pkt.flits[0][ MTYPE  ] = b8(19) if cacheable else b8(14)
 
   pkt.flits[1][ ADDR   ] = b48(addr)
-  pkt.flits[1][ NBYTES ] = b3(nbytes)
+  pkt.flits[1][ NBYTES ] = wen_map[ nbytes ]
 
   pkt.flits[2][ CHIPID ] = b14(src_chipid)
   pkt.flits[2][ XPOS   ] = b8(src_x)
@@ -111,10 +122,10 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
   pkt.flits[0][ TAG    ] = b8(tag)
   pkt.flits[0][ PLEN   ] = b8(10)
   pkt.flits[0][ CHIPID ] = b8(2)
-  pkt.flits[0][ MTYPE  ] = b8( STORE_MEM ) if cacheable else b8( NC_STORE_MEM_ACK )
+  pkt.flits[0][ MTYPE  ] = b8( STORE_MEM ) if cacheable else b8( NC_STORE_REQ )
 
   pkt.flits[1][ ADDR   ] = b48(addr)
-  pkt.flits[1][ NBYTES ] = b3(nbytes)
+  pkt.flits[1][ NBYTES ] = wen_map[ nbytes ]
 
   pkt.flits[2][ CHIPID ] = b14(src_chipid)
   pkt.flits[2][ XPOS   ] = b8(src_x)
@@ -132,7 +143,7 @@ def mk_piton_wr_req( addr, nbytes, cacheable, tag, data,
 def mk_piton_rd_resp( data, tag, cacheable, chipid=0, dst_x=0, dst_y=0 ):
   pkt = PitonPacket( nflits=9 )
 
-  pkt.flits[0][ MTYPE ]  = b8(LOAD_MEM_ACK) if cacheable else b8(NC_LOAD_MEM_ACK)
+  pkt.flits[0][ MTYPE ]  = b8(LOAD_MEM_ACK) if cacheable else b8( NC_LOAD_MEM_ACK )
   pkt.flits[0][ PLEN  ]  = b8(8)
   pkt.flits[0][ TAG   ]  = b8(tag)
   pkt.flits[0][ CHIPID ] = b14(chipid)
@@ -173,7 +184,7 @@ def piton_rd_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   addr  = base_addr + idx * 0x40
   src_x = draw( st.integers( 0, max_x ) )
   src_y = draw( st.integers( 0, max_y ) )
-  return mk_piton_rd_req( addr, 64, True, 0, src_x=src_x, src_y=src_y )
+  return mk_piton_rd_req( addr, 64, False, 0, src_x=src_x, src_y=src_y )
 
 @st.composite
 def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
@@ -183,7 +194,8 @@ def piton_wr_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):
   src_y   = draw( st.integers( 0, max_y ) )
   payload = draw( st.lists( pst.bits(64), min_size=8, max_size=8 ) )
   wr_data = reduce( lambda a, b: concat( b, a ), payload)
-  return mk_piton_wr_req( addr, 64, True, 0, wr_data, src_x=src_x, src_y=src_y )
+  nbytes  = draw( st.sampled_from( [ 64, 1, 2, 4, 8, 16, 32 ] ) )
+  return mk_piton_wr_req( addr, nbytes, False, 0, wr_data, src_x=src_x, src_y=src_y )
 
 @st.composite
 def piton_reqs( draw, num_addr=4, base_addr=0x1000, max_x=8, max_y=8 ):

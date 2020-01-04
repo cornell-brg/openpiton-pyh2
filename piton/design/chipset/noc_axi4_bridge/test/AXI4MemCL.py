@@ -72,7 +72,8 @@ class AXI4MemCL( Component ):
         wr_data = s.mem.read( wr_addr, 64 )
 
         for i in range( 64 ):
-          wr_data[i*8:(i+1)*8] = s.dw_msg.wdata[i*8:(i+1)*8]
+          if s.dw_msg.wstrb[i]:
+            wr_data[i*8:(i+1)*8] = s.dw_msg.wdata[i*8:(i+1)*8]
 
         s.mem.write( wr_addr, 64, wr_data )
 

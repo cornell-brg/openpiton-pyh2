@@ -73,7 +73,7 @@ class AXI4DataWrite:
   wuser    : Bits11
 
   def __str__( self ):
-    return f'{self.wdata[480:512]}...{self.wdata[0:32]}'
+    return f'{self.wstrb}:{self.wdata[480:512]}...{self.wdata[0:32]}'
 
 @bitstruct
 class AXI4WriteResp:

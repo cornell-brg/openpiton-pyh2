@@ -21,7 +21,7 @@ class AXIAdapterFL( Component ):
 
   def request( s, pkt ):
 
-    # Cacheable read
+    # Cacheable read - always reads the entire cacheline
 
     if pkt[0][ MTYPE ] == LOAD_MEM:
 
@@ -35,14 +35,13 @@ class AXIAdapterFL( Component ):
       # TODO:
       # - support variable length
       # - 64B aligned
-      aligned_addr = addr
       assert addr % 64 == 0
-      data = s.mem.read( aligned_addr, 64 )
+      data = s.mem.read( addr, 64 )
       print( 'rd:', aligned_addr, data )
 
       return mk_piton_rd_resp( data, tag, True, chipid, xpos, ypos )
 
-    # Non-cacheable read
+    # Non-cacheable read - always reads the entire cacheline
 
     elif pkt[0][ MTYPE ] == NC_LOAD_REQ:
       tag    = pkt[0][ TAG   ]
@@ -55,13 +54,12 @@ class AXIAdapterFL( Component ):
       # TODO:
       # - support variable length
       # - 64B aligned
-      aligned_addr = addr
       assert addr % 64 == 0
-      data = s.mem.read( aligned_addr, 64 )
+      data = s.mem.read( addr, 64 )
 
       return mk_piton_rd_resp( data, tag, False, chipid, xpos, ypos )
 
-    # Cacheable store
+    # Cacheable store - always writes the entire cacheline
 
     elif pkt[0][ MTYPE ] == STORE_MEM:
       tag    = pkt[0][ TAG    ]
@@ -71,19 +69,18 @@ class AXIAdapterFL( Component ):
       xpos   = pkt[2][ XPOS   ]
       ypos   = pkt[2][ YPOS   ]
 
-      aligned_addr = addr
       assert addr % 64 == 0
-      data = s.mem.read( aligned_addr, 64 )
+      data = s.mem.read( addr, 64 )
       for i in range( 8 ):
         data[i*64:(i+1)*64] = b64( pkt[i+3] )
 
-      s.mem.write( aligned_addr, 64, data )
+      s.mem.write( addr, 64, data )
       # print( tag, chipid, xpos, ypos )
-      # print( 'wr', aligned_addr, data )
+      # print( 'wr', addr, data )
       return mk_piton_wr_resp( tag, True, chipid, xpos, ypos )
 
 
-    # Non-cacheable store
+    # Non-cacheable store - variable length write
 
     elif pkt[0][ MTYPE ] == NC_STORE_REQ:
       tag    = pkt[0][ TAG    ]
@@ -93,13 +90,15 @@ class AXIAdapterFL( Component ):
       xpos   = pkt[2][ XPOS   ]
       ypos   = pkt[2][ YPOS   ]
 
-      aligned_addr = addr
       assert addr % 64 == 0
-      data = s.mem.read( aligned_addr, 64 )
+      data = s.mem.read( addr, 64 )
       for i in range( 8 ):
-        data[i*64:(i+1)*64] = b64( pkt[i] )
+        data[i*64:(i+1)*64] = b64( pkt[i+3] )
 
-      s.mem.write( aligned_addr, 64 )
+      s.mem.write( addr, nbytes, data[0:nbytes*8] )
 
       return mk_piton_wr_resp( tag, False, chipid, xpos, ypos )
+
+    else:
+      assert False, f'Unknown packet type {pkt[0][ MTYPE ]}'
 
