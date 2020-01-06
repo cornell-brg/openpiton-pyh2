@@ -28,7 +28,7 @@ class PacketSrcCL( Component ):
     s.send    = NonBlockingCallerIfc( PhitType )
     s.pkts    = deque( pkts )
     s.state   = STATE_HEADER
-    s.cur_pkt = None
+    s.cur_pkt = []
     s.cur_idx = 0
 
     @s.update
