@@ -213,15 +213,13 @@ always @(posedge clk) begin
                     strb_before_offset <= `AXI4_STRB_WIDTH'hf;
                 end
                 `MSG_DATA_SIZE_8B: begin
-                    // strb_before_offset <= `AXI4_STRB_WIDTH'hff;
-                    // strb_before_offset <= `AXI4_STRB_WIDTH'hf;
+                    strb_before_offset <= `AXI4_STRB_WIDTH'hff;
                 end
                 `MSG_DATA_SIZE_16B: begin
                     strb_before_offset <= `AXI4_STRB_WIDTH'hffff;
                 end
                 `MSG_DATA_SIZE_32B: begin
-                    // strb_before_offset <= `AXI4_STRB_WIDTH'hffffffff;
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hfffffff;
+                    strb_before_offset <= `AXI4_STRB_WIDTH'hffffffff;
                 end
                 `MSG_DATA_SIZE_64B: begin
                     strb_before_offset <= `AXI4_STRB_WIDTH'hffffffffffffffff;

@@ -10,6 +10,7 @@ Author : Yanghui Ou
 
 import hypothesis
 from hypothesis import strategies as st
+from hypothesis import Phase
 from pymtl3 import *
 from pymtl3.passes.backends.sverilog import ImportPass
 
@@ -167,6 +168,33 @@ def has_wr_req( reqs ):
 
   return False
 
+#-------------------------------------------------------------------------
+# pyh2 test
+#-------------------------------------------------------------------------
+
+@hypothesis.settings(
+  deadline     = None,
+  max_examples = 50,
+  phases = [ Phase.generate ]
+)
+@hypothesis.given(
+  reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
+)
+def test_hypothesis_gen_only( reqs ):
+  hypothesis.assume( has_wr_req( reqs ) )
+  hypothesis.assume( len( reqs ) >= 2 )
+  ref  = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  resps = [ ref.request( r ) for r in reqs ]
+  th = TestHarness( reqs, resps )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th, max_cycles = 500 )
 
 #-------------------------------------------------------------------------
 # pyh2 test
@@ -179,7 +207,7 @@ def has_wr_req( reqs ):
 @hypothesis.given(
   reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
 )
-def test_hypothesis( reqs ):
+def test_hypothesis_shrink( reqs ):
   hypothesis.assume( has_wr_req( reqs ) )
   hypothesis.assume( len( reqs ) >= 2 )
   ref  = AXIAdapterFL()
