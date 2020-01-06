@@ -23,7 +23,7 @@ class PacketSinkCL( Component ):
 
   def construct( s, PhitType, pkts, cmp_fn=lambda a, b : a == b ):
 
-    print( pkts )
+    # print( pkts )
 
     s.recv.Type = PhitType
 

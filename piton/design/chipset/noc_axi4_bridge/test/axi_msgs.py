@@ -39,6 +39,9 @@ class AXI4AddrRead:
   arregion : Bits4
   aruser   : Bits11
 
+  def __str__( self ):
+    return f'{self.araddr}'
+
 @bitstruct
 class AXI4DataRead:
   rid   : Bits6
@@ -63,6 +66,9 @@ class AXI4AddrWrite:
   awqos    : Bits4
   awregion : Bits4
   awuser   : Bits11
+
+  def __str__( self ):
+    return f'{self.awaddr}'
 
 @bitstruct
 class AXI4DataWrite:
