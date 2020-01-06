@@ -174,13 +174,14 @@ def has_wr_req( reqs ):
 
 @hypothesis.settings(
   deadline     = None,
-  max_examples = 20,
+  max_examples = 50,
 )
 @hypothesis.given(
   reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
 )
 def test_hypothesis( reqs ):
   hypothesis.assume( has_wr_req( reqs ) )
+  hypothesis.assume( len( reqs ) >= 2 )
   ref  = AXIAdapterFL()
   ref.elaborate()
   ref.apply( SimulationPass() )
