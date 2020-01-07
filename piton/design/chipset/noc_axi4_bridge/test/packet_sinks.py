@@ -10,6 +10,7 @@ Author : Yanghui Ou
 
 from pymtl3 import *
 from pymtl3.stdlib.ifcs import RecvIfcRTL, RecvRTL2SendCL
+from .piton_packet import PLEN
 
 #-------------------------------------------------------------------------
 # TestSinkCL
@@ -72,7 +73,7 @@ class PacketSinkCL( Component ):
 
     if s.idx >= len( s.pkts ):
       s.error_msg = ( 'Test Sink received more pkts than expected!\n'
-                      f'Received : {msg}' )
+                      f'Received : {phit}' )
       return
 
     # State transition
@@ -122,3 +123,129 @@ class PacketSinkCL( Component ):
   # Line trace
   def line_trace( s ):
     return f'{s.recv}({s.state})'
+
+#-------------------------------------------------------------------------
+# TestSinkUnorderedCL
+#-------------------------------------------------------------------------
+# TODO: initial delay and interval delay
+
+def pkt_eq( p0, p1 ):
+  if len( p0 ) != len( p1 ):
+    return False
+  for i in range( len(p0) ):
+    if p0[i] != p1[i]:
+      return False
+  return True
+
+class PacketSinkUnorderedCL( Component ):
+
+  def construct( s, PhitType, pkts, cmp_fn=lambda a, b : a == b ):
+
+    # print( pkts )
+
+    s.recv.Type = PhitType
+
+    s.idx          = 0
+    s.pkts         = list( pkts )
+    s.cmp_fn       = cmp_fn
+    s.error_msg    = ''
+
+    s.all_msg_recved = False
+    s.done_flag      = False
+
+    s.state   = STATE_HEADER
+    s.cur_pkt = []
+    s.cur_len = 0
+
+    s.buf_pkt = []
+    s.buf_idx = 0
+
+    s.recv_called = False
+
+    @s.update
+    def up_sink_count():
+      # Raise exception at the start of next cycle so that the errored
+      # line trace gets printed out
+      if s.error_msg:
+        raise Exception( s.error_msg )
+
+      # Tick one more cycle after all message is received so that the
+      # exception gets thrown
+      if s.all_msg_recved:
+        s.done_flag = True
+
+      if s.idx >= len( s.pkts ):
+        s.all_msg_recved = True
+
+    # Constraints
+
+    s.add_constraints(
+      U( up_sink_count ) < M( s.recv ),
+      U( up_sink_count ) < M( s.recv.rdy )
+    )
+
+  @non_blocking( lambda s: True )
+  def recv( s, phit ):
+
+    # Sanity check
+
+    if len( s.pkts ) == 0:
+      s.error_msg = ( 'Test Sink received more pkts than expected!\n'
+                      f'Received : {phit}' )
+      return
+
+    # State transition
+
+    if s.state == STATE_HEADER:
+      assert not s.buf_pkt
+      assert s.buf_idx == 0
+      s.cur_len = phit[ PLEN ]
+      s.buf_pkt.append( phit )
+      s.buf_idx += 1
+
+      if s.buf_idx != s.cur_len + 1:
+        s.state = STATE_BODY
+
+    elif s.state == STATE_BODY:
+      s.buf_pkt.append( phit )
+      s.buf_idx += 1
+
+      if s.buf_idx == s.cur_len + 1:
+        s.state = STATE_HEADER
+
+    else:
+      assert False, "Undefined state!"
+
+    # Correctness check
+    # - Check if the packet exists
+
+    if s.buf_pkt and s.buf_idx == s.cur_len + 1:
+
+      pkt_found = False
+      for i in range( len(s.pkts) ):
+        if pkt_eq( s.buf_pkt, s.pkts[i] ):
+          pkt_found = True
+          s.pkts.pop(i)
+          break
+
+      if not pkt_found:
+        s.error_msg = (
+          f'Test sink {s} received WRONG message!\n'
+          f'Expected : { s.pkts }\n'
+          f'Received : { s.buf_pkt }\n'
+          f'MTYPE: {s.buf_pkt[0][14:22].uint()}'
+        )
+        return
+
+      s.buf_pkt = []
+      s.buf_idx = 0
+      s.cur_len = 0
+      s.idx += 1
+
+  def done( s ):
+    return s.done_flag
+
+  # Line trace
+  def line_trace( s ):
+    return f'{s.recv}({s.state})'
+
