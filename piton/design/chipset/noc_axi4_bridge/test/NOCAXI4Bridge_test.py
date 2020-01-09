@@ -18,7 +18,7 @@ from .NOCAXI4Bridge import NOCAXI4Bridge, AXI4Adapter
 from .AXIAdapterFL import AXIAdapterFL
 from .AXI4MemCL import AXI4MemRTL
 from .packet_srcs import PacketSrcCL
-from .packet_sinks import PacketSinkCL
+from .packet_sinks import PacketSinkUnorderedCL as PacketSinkCL
 from .piton_packet import *
 
 #-------------------------------------------------------------------------
@@ -32,7 +32,7 @@ class TestHarness( Component ):
     s.src  = PacketSrcCL ( Bits64, src_pkts  )
     s.sink = PacketSinkCL( Bits64, sink_pkts )
     s.dut  = AXI4Adapter()
-    s.mem  = AXI4MemRTL( delay_ar=2, delay_dr=4, delay_aw=2, delay_dw=2, delay_resp=1 )
+    s.mem  = AXI4MemRTL( delay_ar=1, delay_dr=4, delay_aw=1, delay_dw=4, delay_resp=2 )
 
     s.src.send  //= s.dut.noc_recv
     s.sink.recv //= s.dut.noc_send
@@ -174,15 +174,15 @@ def has_wr_req( reqs ):
 
 @hypothesis.settings(
   deadline     = None,
-  max_examples = 50,
+  max_examples = 1000,
   phases = [ Phase.generate ]
 )
 @hypothesis.given(
-  reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
+  reqs = st.lists( piton_reqs(), min_size=2, max_size=100 )
 )
 def test_hypothesis_gen_only( reqs ):
   hypothesis.assume( has_wr_req( reqs ) )
-  hypothesis.assume( len( reqs ) >= 2 )
+  # hypothesis.assume( len( reqs ) >= 2 )
   ref  = AXIAdapterFL()
   ref.elaborate()
   ref.apply( SimulationPass() )
@@ -202,14 +202,14 @@ def test_hypothesis_gen_only( reqs ):
 
 @hypothesis.settings(
   deadline     = None,
-  max_examples = 50,
+  max_examples = 1000,
 )
 @hypothesis.given(
-  reqs = st.lists( piton_reqs(), min_size=1, max_size=10 )
+  reqs = st.lists( piton_reqs(), min_size=2, max_size=20 )
 )
 def test_hypothesis_shrink( reqs ):
   hypothesis.assume( has_wr_req( reqs ) )
-  hypothesis.assume( len( reqs ) >= 2 )
+  # hypothesis.assume( len( reqs ) >= 2 )
   ref  = AXIAdapterFL()
   ref.elaborate()
   ref.apply( SimulationPass() )
