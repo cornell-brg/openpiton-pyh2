@@ -57,10 +57,10 @@ class AXI4MemCL( Component ):
 
       # Assemble write request
 
-      if s.pipe_aw.deq.rdy():
+      if s.pipe_aw.deq.rdy() and s.aw_msg is None:
         s.aw_msg = s.pipe_aw.deq()
 
-      if s.pipe_dw.deq.rdy():
+      if s.pipe_dw.deq.rdy() and s.dw_msg is None:
         s.dw_msg = s.pipe_dw.deq()
 
       # Write memory if write request if ready
@@ -79,6 +79,7 @@ class AXI4MemCL( Component ):
 
         # Send response and clear message
         resp = AXI4WriteResp( s.aw_msg.awid, b2(0), s.aw_msg.awuser )
+        print( 'sending resp' )
         s.pipe_resp.enq( resp )
 
         s.aw_msg = None
@@ -86,7 +87,7 @@ class AXI4MemCL( Component ):
 
       # Assemble read request
 
-      if s.pipe_ar.deq.rdy():
+      if s.pipe_ar.deq.rdy() and s.ar_msg is None:
         s.ar_msg = s.pipe_ar.deq()
 
       # Read memory if read request is ready
@@ -158,5 +159,5 @@ class AXI4MemRTL( Component ):
 
   # TODO
   def line_trace( s ):
-    return ''
+    return f'{s.addr_read}|{s.data_read}II{s.addr_write}|{s.data_write}|{s.write_resp}'
 

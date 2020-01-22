@@ -48,7 +48,8 @@ class TestHarness( Component ):
     return s.src.done() and s.sink.done()
 
   def line_trace( s ):
-    return s.dut.line_trace()
+    # return s.dut.line_trace()
+    return s.mem.line_trace()
 
 #-------------------------------------------------------------------------
 # run_sim
