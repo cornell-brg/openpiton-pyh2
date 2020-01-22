@@ -48,8 +48,8 @@ class TestHarness( Component ):
     return s.src.done() and s.sink.done()
 
   def line_trace( s ):
-    # return s.dut.line_trace()
-    return s.mem.line_trace()
+    return s.dut.line_trace()
+    # return s.mem.line_trace()
 
 #-------------------------------------------------------------------------
 # run_sim
@@ -174,6 +174,33 @@ def test_stress():
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+  ]
+  resp = [ ref.request( r ) for r in req ]
+  print( len(resp) )
+  assert len(req)==len(resp)
+
+  th = TestHarness( req, resp )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th, max_cycles=500 )
+
+def test_stress2():
+  ref = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  req = [
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
   ]
   resp = [ ref.request( r ) for r in req ]
   print( len(resp) )
