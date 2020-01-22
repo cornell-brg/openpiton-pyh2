@@ -63,6 +63,9 @@ def run_sim( th, max_cycles=100 ):
     ncycles += 1
     print("{:3}:{}".format( ncycles, th.line_trace() ))
 
+  if th.done():
+    print( )
+
   # Check timeout
   assert ncycles < max_cycles
 
@@ -148,6 +151,40 @@ def test_wr_rd_hi():
   th.apply( SimulationPass() )
   th.sim_reset()
   run_sim( th )
+
+# This counter example was found by pyh2
+def test_stress():
+  ref = AXIAdapterFL()
+  ref.elaborate()
+  ref.apply( SimulationPass() )
+
+  req = [
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+    mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
+  ]
+  resp = [ ref.request( r ) for r in req ]
+  print( len(resp) )
+  assert len(req)==len(resp)
+
+  th = TestHarness( req, resp )
+  th.elaborate()
+  th = ImportPass()( th )
+  th.elaborate()
+  th.apply( SimulationPass() )
+  th.sim_reset()
+  run_sim( th, max_cycles=500 )
 
 #-------------------------------------------------------------------------
 # has_wr_req
