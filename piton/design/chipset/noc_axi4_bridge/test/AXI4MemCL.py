@@ -79,7 +79,6 @@ class AXI4MemCL( Component ):
 
         # Send response and clear message
         resp = AXI4WriteResp( s.aw_msg.awid, b2(0), s.aw_msg.awuser )
-        print( 'sending resp' )
         s.pipe_resp.enq( resp )
 
         s.aw_msg = None
