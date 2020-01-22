@@ -174,7 +174,7 @@ class PacketSinkUnorderedCL( Component ):
       if s.all_msg_recved:
         s.done_flag = True
 
-      if s.idx >= len( s.pkts ):
+      if len( s.pkts ) == 0:
         s.all_msg_recved = True
 
     # Constraints
@@ -225,7 +225,7 @@ class PacketSinkUnorderedCL( Component ):
       for i in range( len(s.pkts) ):
         if pkt_eq( s.buf_pkt, s.pkts[i] ):
           pkt_found = True
-          s.pkts.pop(i)
+          print( 'poping', s.pkts.pop(i) )
           break
 
       if not pkt_found:
