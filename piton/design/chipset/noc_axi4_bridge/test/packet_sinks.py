@@ -225,7 +225,7 @@ class PacketSinkUnorderedCL( Component ):
       for i in range( len(s.pkts) ):
         if pkt_eq( s.buf_pkt, s.pkts[i] ):
           pkt_found = True
-          print( 'poping', s.pkts.pop(i) )
+          s.pkts.pop(i)
           break
 
       if not pkt_found:
