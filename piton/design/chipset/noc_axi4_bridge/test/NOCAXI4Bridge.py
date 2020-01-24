@@ -95,6 +95,8 @@ class NOCAXI4Bridge( Placeholder, Component ):
     s.m_axi_bready = OutPort( Bits1 )
 
     s.config_sverilog_import = ImportConfigs(
+      # Enable verilator vcd
+      vl_trace = True,
       # Name of the top Verilog module
       top_module = 'noc_axi4_bridge', # File containing the top module
       # vl_src = "$PITON_ROOT/piton/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge.v",

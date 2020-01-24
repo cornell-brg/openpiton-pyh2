@@ -12,7 +12,7 @@ import hypothesis
 from hypothesis import strategies as st
 from hypothesis import Phase
 from pymtl3 import *
-from pymtl3.passes.backends.sverilog import ImportPass
+from pymtl3.passes.backends.sverilog import ImportPass, ImportConfigs
 
 from .NOCAXI4Bridge import NOCAXI4Bridge, AXI4Adapter
 from .AXIAdapterFL import AXIAdapterFL
@@ -193,14 +193,14 @@ def test_stress2():
   ref.apply( SimulationPass() )
 
   req = [
-    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0xfaceb00c), src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
     mk_piton_rd_req( 0x1000, 64, False, 0, src_x=1, src_y=1 ),
-    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0), src_x=1, src_y=1 ),
+    mk_piton_wr_req( 0x1000, 64, False, 0, Bits512(0x8badf00d), src_x=1, src_y=1 ),
   ]
   resp = [ ref.request( r ) for r in req ]
   print( len(resp) )
@@ -208,6 +208,7 @@ def test_stress2():
 
   th = TestHarness( req, resp )
   th.elaborate()
+  # th.dut.adapter.config_sverilog_import = ImportConfigs( vl_trace=True )
   th = ImportPass()( th )
   th.elaborate()
   th.apply( SimulationPass() )
