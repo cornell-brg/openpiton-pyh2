@@ -145,7 +145,7 @@ storage_addr_trans_unified   #(
 storage_addr_trans #(
 `endif
 .STORAGE_ADDR_WIDTH(`AXI4_ADDR_WIDTH)
-) cpu_mig_waddr_translastor (
+) cpu_mig_waddr_translator (
     .va_byte_addr       (virt_addr  ),
     .storage_addr_out   (phys_addr  )
 );
@@ -156,8 +156,8 @@ reg [6:0] size[`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0];
 reg [5:0] offset[`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0];
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] resp_id_f;
 wire resp_go;
-wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) 
-                || (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ);
+wire sd_card = (virt_addr[`PHY_ADDR_WIDTH-1]);
+wire uncacheable = (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ);
 
 generate begin
     genvar i;
@@ -169,7 +169,11 @@ generate begin
             end 
             else begin
                 if ((i == req_id_f) && m_axi_argo) begin
-                    if (uncacheable) begin
+                    if (sd_card) begin
+                        offset[i] <= {virt_addr[5:3], 3'b0};
+                        size[i] <= 7'd8;
+                    end
+                    else if (uncacheable) begin
                         offset[i] <= virt_addr[5:0];
                         case (req_header_f[`MSG_DATA_SIZE])
                             `MSG_DATA_SIZE_0B: begin

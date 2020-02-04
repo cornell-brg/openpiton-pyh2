@@ -33,9 +33,7 @@ module noc_axi4_bridge (
     // Clock + Reset
     input  wire                                   clk,
     input  wire                                   rst_n,
-    input  wire                                   reset, // dummy
     input  wire                                   uart_boot_en,
-    input  wire                                   phy_init_done,
 
     // Noc interface
     input  wire                                   src_bridge_vr_noc2_val,
@@ -128,7 +126,7 @@ wire ser_rdy;
 
 noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
     .clk(clk),
-    .rst_n(rst_n),
+    .rst_n(rst_n), 
 
     .deser_header(deser_header),
     .deser_data(deser_data),
@@ -148,38 +146,37 @@ noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
     .write_req_header(write_req_header),
     .write_req_id(write_req_id),
     .write_req_data(write_req_data),
-    .write_req_val(write_req_val),
+    .write_req_val(write_req_val), 
     .write_req_rdy(write_req_rdy),
 
-    .write_resp_id(write_resp_id),
-    .write_resp_val(write_resp_val),
-    .write_resp_rdy(write_resp_rdy),
+    .write_resp_id(write_resp_id), 
+    .write_resp_val(write_resp_val), 
+    .write_resp_rdy(write_resp_rdy), 
 
-    .ser_header(ser_header),
-    .ser_data(ser_data),
-    .ser_val(ser_val),
+    .ser_header(ser_header), 
+    .ser_data(ser_data), 
+    .ser_val(ser_val), 
     .ser_rdy(ser_rdy)
 );
 
 noc_axi4_bridge_deser noc_axi4_bridge_deser(
-    .clk(clk),
-    .rst_n(rst_n),
+    .clk(clk), 
+    .rst_n(rst_n), 
 
-    .flit_in(src_bridge_vr_noc2_dat),
-    .flit_in_val(src_bridge_vr_noc2_val),
-    .flit_in_rdy(src_bridge_vr_noc2_rdy),
-    .phy_init_done(phy_init_done),
+    .flit_in(src_bridge_vr_noc2_dat), 
+    .flit_in_val(src_bridge_vr_noc2_val), 
+    .flit_in_rdy(src_bridge_vr_noc2_rdy), 
 
-    .header_out(deser_header),
-    .data_out(deser_data),
-    .out_val(deser_val),
+    .header_out(deser_header), 
+    .data_out(deser_data), 
+    .out_val(deser_val), 
     .out_rdy(deser_rdy)
 );
 
 noc_axi4_bridge_read noc_axi4_bridge_read (
-    .clk(clk),
-    .rst_n(rst_n),
-    .uart_boot_en(uart_boot_en),
+    .clk(clk), 
+    .rst_n(rst_n), 
+    .uart_boot_en(uart_boot_en), 
 
     // NOC interface
     .req_val(read_req_val),
@@ -200,7 +197,7 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_arburst(m_axi_arburst),
     .m_axi_arlock(m_axi_arlock),
     .m_axi_arcache(m_axi_arcache),
-    .m_axi_arprot(m_axi_arprot),
+    .m_axi_arprot(m_axi_arprot), 
     .m_axi_arqos(m_axi_arqos),
     .m_axi_arregion(m_axi_arregion),
     .m_axi_aruser(m_axi_aruser),
@@ -210,7 +207,7 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_rid(m_axi_rid),
     .m_axi_rdata(m_axi_rdata),
     .m_axi_rresp(m_axi_rresp),
-    .m_axi_rlast(m_axi_rlast),
+    .m_axi_rlast(m_axi_rlast), 
     .m_axi_ruser(m_axi_ruser),
     .m_axi_rvalid(m_axi_rvalid),
     .m_axi_rready(m_axi_rready)
@@ -220,7 +217,7 @@ noc_axi4_bridge_write noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),
     .rst_n(rst_n),
-    .uart_boot_en(uart_boot_en),
+    .uart_boot_en(uart_boot_en), 
 
     // NOC interface
     .req_val(write_req_val),
@@ -264,16 +261,16 @@ noc_axi4_bridge_write noc_axi4_bridge_write (
 );
 
 noc_axi4_bridge_ser noc_axi4_bridge_ser(
-    .clk(clk),
-    .rst_n(rst_n),
+    .clk(clk), 
+    .rst_n(rst_n), 
 
-    .header_in(ser_header),
-    .data_in(ser_data),
-    .in_val(ser_val),
-    .in_rdy(ser_rdy),
+    .header_in(ser_header), 
+    .data_in(ser_data), 
+    .in_val(ser_val), 
+    .in_rdy(ser_rdy), 
 
-    .flit_out(bridge_dst_vr_noc3_dat),
-    .flit_out_val(bridge_dst_vr_noc3_val),
+    .flit_out(bridge_dst_vr_noc3_dat), 
+    .flit_out_val(bridge_dst_vr_noc3_val), 
     .flit_out_rdy(bridge_dst_vr_noc3_rdy)
 );
 
